@@ -1,0 +1,21 @@
+{
+  "name": "firework_studio",
+  "version": "1.0.0",
+  "description": "firework studio, we develop fireworks for you",
+  "main": "script.js",
+  "scripts": {
+    "deploy": "npx http-server",
+    "start": "live-server --port=8080 --host=localhost",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "firework",
+    "new",
+    "year"
+  ],
+  "author": "alex2wong",
+  "license": "ISC",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}

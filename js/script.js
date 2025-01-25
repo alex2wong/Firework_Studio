@@ -77,12 +77,77 @@ const trailsStage = new Stage("trails-canvas");
 const mainStage = new Stage("main-canvas");
 const stages = [trailsStage, mainStage];
 
-//随机文字烟花内容
-const randomWords = ["新年快乐", "心想事成"];
+// 修改随机文字烟花内容管理
+const defaultWords = ["新年快乐", "心想事成"];
+const customWords = new Set(); // 用于存储用户自定义文字
 const wordDotsMap = {};
-randomWords.forEach((word) => {
+
+// 初始化默认文字
+defaultWords.forEach((word) => {
 	wordDotsMap[word] = MyMath.literalLattice(word, 3, "Gabriola,华文琥珀", "90px");
 });
+
+// 获取所有可用的文字（默认+自定义）
+function getAllWords() {
+	return [...defaultWords, ...customWords];
+}
+
+// 添加自定义文字
+function addCustomText() {
+	const input = document.getElementById('customText');
+	const text = input.value.trim();
+	
+	// 验证输入
+	if (!text) {
+		alert('请输入祝福语');
+		return;
+	}
+	if (text.length > 8) {
+		alert('祝福语最多8个字');
+		return;
+	}
+	if (defaultWords.includes(text) || customWords.has(text)) {
+		alert('该祝福语已存在');
+		return;
+	}
+	if (customWords.size >= 2) {
+		alert('最多只能添加2个自定义祝福语');
+		return;
+	}
+
+	// 添加新文字
+	customWords.add(text);
+	wordDotsMap[text] = MyMath.literalLattice(text, 3, "Gabriola,华文琥珀", "90px");
+	
+	// 清空输入框
+	input.value = '';
+	
+	// 更新显示
+	updateCustomTextList();
+}
+
+// 删除自定义文字
+function removeCustomText(text) {
+	customWords.delete(text);
+	delete wordDotsMap[text];
+	updateCustomTextList();
+}
+
+// 更新自定义文字列表显示
+function updateCustomTextList() {
+	const listElement = document.getElementById('customTextList');
+	listElement.innerHTML = Array.from(customWords)
+		.map(text => `<span onclick="removeCustomText('${text}')" title="点击删除">✨${text}</span>`)
+		.join('');
+}
+
+// 修改原有的 randomWord 函数
+function randomWord() {
+	const allWords = getAllWords();
+	if (allWords.length === 0) return "";
+	if (allWords.length === 1) return allWords[0];
+	return allWords[Math.floor(Math.random() * allWords.length)];
+}
 
 // 自定义背景
 document.addEventListener("DOMContentLoaded", function () {
@@ -257,7 +322,15 @@ function toggleSound(toggle) {
 	if (typeof toggle === "boolean") {
 		store.setState({ soundEnabled: toggle });
 	} else {
-		store.setState({ soundEnabled: !store.state.soundEnabled });
+		const soundEnabled = store.state.soundEnabled;
+		if (soundEnabled) {
+			console.log('# 音乐暂停')
+			soundManager.pauseMusic();
+		} else {
+			console.log('# 音乐播放')
+			soundManager.playMusic();
+		}
+		store.setState({ soundEnabled:!soundEnabled  });
 	}
 }
 
@@ -580,200 +653,10 @@ function randomColor(options) {
 	return color;
 }
 
-// 随机获取一段文字
-function randomWord() {
-	if (randomWords.length === 0) return "";
-	if (randomWords.length === 1) return randomWords[0];
-	return randomWords[(Math.random() * randomWords.length) | 0];
-}
-
 function whiteOrGold() {
 	return Math.random() < 0.5 ? COLOR.Gold : COLOR.White;
 }
 
-// Shell helpers
-function makePistilColor(shellColor) {
-	return shellColor === COLOR.White || shellColor === COLOR.Gold ? randomColor({ notColor: shellColor }) : whiteOrGold();
-}
-
-// 唯一的 shell 类型
-const crysanthemumShell = (size = 1) => {
-	const glitter = Math.random() < 0.25;
-	const singleColor = Math.random() < 0.72;
-	const color = singleColor ? randomColor({ limitWhite: true }) : [randomColor(), randomColor({ notSame: true })];
-	const pistil = singleColor && Math.random() < 0.42;
-	const pistilColor = pistil && makePistilColor(color);
-	const secondColor = singleColor && (Math.random() < 0.2 || color === COLOR.White) ? pistilColor || randomColor({ notColor: color, limitWhite: true }) : null;
-	const streamers = !pistil && color !== COLOR.White && Math.random() < 0.42;
-	let starDensity = glitter ? 1.1 : 1.25;
-	if (isLowQuality) starDensity *= 0.8;
-	if (isHighQuality) starDensity = 1.2;
-	return {
-		shellSize: size,
-		spreadSize: 300 + size * 100,
-		starLife: 900 + size * 200,
-		starDensity,
-		color,
-		secondColor,
-		glitter: glitter ? "light" : "",
-		glitterColor: whiteOrGold(),
-		pistil,
-		pistilColor,
-		streamers,
-	};
-};
-
-const ghostShell = (size = 1) => {
-	// Extend crysanthemum shell
-	const shell = crysanthemumShell(size);
-	// Ghost effect can be fast, so extend star life
-	shell.starLife *= 1.5;
-	// Ensure we always have a single color other than white
-	let ghostColor = randomColor({ notColor: COLOR.White });
-	// Always use streamers, and sometimes a pistil
-	shell.streamers = true;
-	const pistil = Math.random() < 0.42;
-	const pistilColor = pistil && makePistilColor(ghostColor);
-	// Ghost effect - transition from invisible to chosen color
-	shell.color = INVISIBLE;
-	shell.secondColor = ghostColor;
-	// We don't want glitter to be spewed by invisible stars, and we don't currently
-	// have a way to transition glitter state. So we'll disable it.
-	shell.glitter = "";
-
-	return shell;
-};
-
-const strobeShell = (size = 1) => {
-	const color = randomColor({ limitWhite: true });
-	return {
-		shellSize: size,
-		spreadSize: 280 + size * 92,
-		starLife: 1100 + size * 200,
-		starLifeVariation: 0.4,
-		starDensity: 1.1,
-		color,
-		glitter: "light",
-		glitterColor: COLOR.White,
-		strobe: true,
-		strobeColor: Math.random() < 0.5 ? COLOR.White : null,
-		pistil: Math.random() < 0.5,
-		pistilColor: makePistilColor(color),
-	};
-};
-
-const palmShell = (size = 1) => {
-	const color = randomColor();
-	const thick = Math.random() < 0.5;
-	return {
-		shellSize: size,
-		color,
-		spreadSize: 250 + size * 75,
-		starDensity: thick ? 0.15 : 0.4,
-		starLife: 1800 + size * 200,
-		glitter: thick ? "thick" : "heavy",
-	};
-};
-
-const ringShell = (size = 1) => {
-	const color = randomColor();
-	const pistil = Math.random() < 0.75;
-	return {
-		shellSize: size,
-		ring: true,
-		color,
-		spreadSize: 300 + size * 100,
-		starLife: 900 + size * 200,
-		starCount: 2.2 * PI_2 * (size + 1),
-		pistil,
-		pistilColor: makePistilColor(color),
-		glitter: !pistil ? "light" : "",
-		glitterColor: color === COLOR.Gold ? COLOR.Gold : COLOR.White,
-		streamers: Math.random() < 0.3,
-	};
-	// return Object.assign({}, defaultShell, config);
-};
-
-const crossetteShell = (size = 1) => {
-	const color = randomColor({ limitWhite: true });
-	return {
-		shellSize: size,
-		spreadSize: 300 + size * 100,
-		starLife: 750 + size * 160,
-		starLifeVariation: 0.4,
-		starDensity: 0.85,
-		color,
-		crossette: true,
-		pistil: Math.random() < 0.5,
-		pistilColor: makePistilColor(color),
-	};
-};
-
-const floralShell = (size = 1) => ({
-	shellSize: size,
-	spreadSize: 300 + size * 120,
-	starDensity: 0.12,
-	starLife: 500 + size * 50,
-	starLifeVariation: 0.5,
-	color: Math.random() < 0.65 ? "random" : Math.random() < 0.15 ? randomColor() : [randomColor(), randomColor({ notSame: true })],
-	floral: true,
-});
-
-const fallingLeavesShell = (size = 1) => ({
-	shellSize: size,
-	color: INVISIBLE,
-	spreadSize: 300 + size * 120,
-	starDensity: 0.12,
-	starLife: 500 + size * 50,
-	starLifeVariation: 0.5,
-	glitter: "medium",
-	glitterColor: COLOR.Gold,
-	fallingLeaves: true,
-});
-
-const willowShell = (size = 1) => ({
-	shellSize: size,
-	spreadSize: 300 + size * 100,
-	starDensity: 0.6,
-	starLife: 3000 + size * 300,
-	glitter: "willow",
-	glitterColor: COLOR.Gold,
-	color: INVISIBLE,
-});
-
-const crackleShell = (size = 1) => {
-	// favor gold
-	const color = Math.random() < 0.75 ? COLOR.Gold : randomColor();
-	return {
-		shellSize: size,
-		spreadSize: 380 + size * 75,
-		starDensity: isLowQuality ? 0.65 : 1,
-		starLife: 600 + size * 100,
-		starLifeVariation: 0.32,
-		glitter: "light",
-		glitterColor: COLOR.Gold,
-		color,
-		crackle: true,
-		pistil: Math.random() < 0.65,
-		pistilColor: makePistilColor(color),
-	};
-};
-
-const horsetailShell = (size = 1) => {
-	const color = randomColor();
-	return {
-		shellSize: size,
-		horsetail: true,
-		color,
-		spreadSize: 250 + size * 38,
-		starDensity: 0.9,
-		starLife: 2500 + size * 300,
-		glitter: "medium",
-		glitterColor: Math.random() < 0.5 ? whiteOrGold() : color,
-		// Add strobe effect to white horsetails, to make them more interesting
-		strobe: color === COLOR.White,
-	};
-};
 
 function randomShellName() {
 	return Math.random() < 0.5 ? "Crysanthemum" : shellNames[(Math.random() * (shellNames.length - 1) + 1) | 0];
@@ -807,18 +690,18 @@ function randomFastShell() {
 
 //烟花类型
 const shellTypes = {
-	Random: randomShell,
-	Crackle: crackleShell,
-	Crossette: crossetteShell,
-	Crysanthemum: crysanthemumShell,
-	"Falling Leaves": fallingLeavesShell,
-	Floral: floralShell,
-	Ghost: ghostShell,
-	"Horse Tail": horsetailShell,
-	Palm: palmShell,
-	Ring: ringShell,
-	Strobe: strobeShell,
-	Willow: willowShell,
+	Random: randomShell,// 随机烟花 - 随机从以下类型中选择一种
+    Crackle: crackleShell,      // 爆裂烟花 - 带有噼啪声和金色火花的烟花
+    Crossette: crossetteShell,  // 交叉烟花 - 烟花在空中交叉形成十字形
+    Crysanthemum: crysanthemumShell, // 菊花烟花 - 像菊花一样绽放的圆形烟花
+    "Falling Leaves": fallingLeavesShell, // 落叶烟花 - 像落叶一样缓慢飘落的金色火花
+    Floral: floralShell,        // 花型烟花 - 形成花朵形状的烟花
+    Ghost: ghostShell,          // 幽灵烟花 - 带有渐变效果的半透明烟花
+    "Horse Tail": horsetailShell, // 马尾烟花 - 像马尾一样的长拖尾效果
+    Palm: palmShell,            // 棕榈烟花 - 像棕榈树展开的形状
+    Ring: ringShell,            // 环形烟花 - 形成圆环形状的烟花
+    Strobe: strobeShell,        // 频闪烟花 - 带有闪烁效果的烟花
+    Willow: willowShell,        // 柳树烟花 - 像柳树枝条下垂的形状
 };
 
 const shellNames = Object.keys(shellTypes);
@@ -1837,426 +1720,6 @@ function crackleEffect(star) {
 	});
 }
 
-/**
- * 烟花可以用以下选项构建:
- *
- * spreadSize:      爆发的大小。
- * starCount: 要创建的星星数量。这是可选的，如果省略，它将被设置为一个合理的数量。
- * starLife:
- * starLifeVariation:
- * color:
- * glitterColor:
- * glitter: One of: 'light', 'medium', 'heavy', 'streamer', 'willow'
- * pistil:
- * pistilColor:
- * streamers:
- * crossette:
- * floral:
- * crackle:
- */
-class Shell {
-	constructor(options) {
-		Object.assign(this, options);
-		this.starLifeVariation = options.starLifeVariation || 0.125;
-		this.color = options.color || randomColor();
-		this.glitterColor = options.glitterColor || this.color;
-		this.disableWord = options.disableWord || false;
-
-		// Set default starCount if needed, will be based on shell size and scale exponentially, like a sphere's surface area.
-		if (!this.starCount) {
-			const density = options.starDensity || 1;
-			const scaledSize = this.spreadSize / 54;
-			this.starCount = Math.max(6, scaledSize * scaledSize * density);
-		}
-	}
-
-	/**
-	 * 发射烟花
-	 * @param {number} position X位置
-	 * @param {number} launchHeight 爆炸所在高度
-	 */
-	launch(position, launchHeight) {
-		const width = stageW;
-		const height = stageH;
-		//与屏幕两侧保持外壳的距离。
-		const hpad = 60;
-		//与屏幕顶部的距离，以保持烟花爆裂。
-		const vpad = 50;
-		//最小爆发高度，以舞台高度的百分比表示
-		const minHeightPercent = 0.45;
-		//以像素为单位的最小突发高度
-		const minHeight = height - height * minHeightPercent;
-
-		const launchX = position * (width - hpad * 2) + hpad;
-		const launchY = height;
-		const burstY = minHeight - launchHeight * (minHeight - vpad);
-
-		const launchDistance = launchY - burstY;
-		// Using a custom power curve to approximate Vi needed to reach launchDistance under gravity and air drag.
-		// Magic numbers came from testing.
-		//使用自定义功率曲线来逼近在重力和空气阻力下达到发射距离所需的Vi。
-		//神奇的数字来自测试。
-		const launchVelocity = Math.pow(launchDistance * 0.04, 0.64);
-
-		const comet = (this.comet = Star.add(
-			launchX,
-			launchY,
-			typeof this.color === "string" && this.color !== "random" ? this.color : COLOR.White,
-			Math.PI,
-			launchVelocity * (this.horsetail ? 1.2 : 1),
-			// Hang time is derived linearly from Vi; exact number came from testing
-			launchVelocity * (this.horsetail ? 100 : 400)
-		));
-
-		// making comet "heavy" limits air drag
-		// //让彗星“重”限制空气阻力
-		comet.heavy = true;
-		// comet spark trail
-		comet.spinRadius = MyMath.random(0.32, 0.85);
-		comet.sparkFreq = 32 / quality;
-		if (isHighQuality) comet.sparkFreq = 8;
-		comet.sparkLife = 320;
-		comet.sparkLifeVariation = 3;
-		if (this.glitter === "willow" || this.fallingLeaves) {
-			comet.sparkFreq = 20 / quality;
-			comet.sparkSpeed = 0.5;
-			comet.sparkLife = 500;
-		}
-		if (this.color === INVISIBLE) {
-			comet.sparkColor = COLOR.Gold;
-		}
-
-		// Randomly make comet "burn out" a bit early.
-		// This is disabled for horsetail shells, due to their very short airtime.
-		if (Math.random() > 0.4 && !this.horsetail) {
-			comet.secondColor = INVISIBLE;
-			comet.transitionTime = Math.pow(Math.random(), 1.5) * 700 + 500;
-		}
-
-		//爆炸回调
-		comet.onDeath = (comet) => this.burst(comet.x, comet.y);
-
-		soundManager.playSound("lift");
-	}
-
-	/**
-	 * 在指定位置爆炸
-	 * @param {*} x
-	 * @param {*} y
-	 */
-	burst(x, y) {
-		// Set burst speed so overall burst grows to set size. This specific formula was derived from testing, and is affected by simulated air drag.
-		const speed = this.spreadSize / 96;
-
-		let color, onDeath, sparkFreq, sparkSpeed, sparkLife;
-		let sparkLifeVariation = 0.25;
-		// Some death effects, like crackle, play a sound, but should only be played once.
-		//有些死亡效果，像爆裂声，播放声音，但应该只播放一次。
-		let playedDeathSound = false;
-
-		if (this.crossette)
-			onDeath = (star) => {
-				if (!playedDeathSound) {
-					soundManager.playSound("crackleSmall");
-					playedDeathSound = true;
-				}
-				crossetteEffect(star);
-			};
-		if (this.crackle)
-			onDeath = (star) => {
-				if (!playedDeathSound) {
-					soundManager.playSound("crackle");
-					playedDeathSound = true;
-				}
-				crackleEffect(star);
-			};
-		if (this.floral) onDeath = floralEffect;
-		if (this.fallingLeaves) onDeath = fallingLeavesEffect;
-
-		if (this.glitter === "light") {
-			sparkFreq = 400;
-			sparkSpeed = 0.3;
-			sparkLife = 300;
-			sparkLifeVariation = 2;
-		} else if (this.glitter === "medium") {
-			sparkFreq = 200;
-			sparkSpeed = 0.44;
-			sparkLife = 700;
-			sparkLifeVariation = 2;
-		} else if (this.glitter === "heavy") {
-			sparkFreq = 80;
-			sparkSpeed = 0.8;
-			sparkLife = 1400;
-			sparkLifeVariation = 2;
-		} else if (this.glitter === "thick") {
-			sparkFreq = 16;
-			sparkSpeed = isHighQuality ? 1.65 : 1.5;
-			sparkLife = 1400;
-			sparkLifeVariation = 3;
-		} else if (this.glitter === "streamer") {
-			sparkFreq = 32;
-			sparkSpeed = 1.05;
-			sparkLife = 620;
-			sparkLifeVariation = 2;
-		} else if (this.glitter === "willow") {
-			sparkFreq = 120;
-			sparkSpeed = 0.34;
-			sparkLife = 1400;
-			sparkLifeVariation = 3.8;
-		}
-
-		// Apply quality to spark count
-		sparkFreq = sparkFreq / quality;
-
-		// Star factory for primary burst, pistils, and streamers.
-		//星形工厂，用于生产初级爆破、雌蕊和流光。
-		let firstStar = true;
-		const starFactory = (angle, speedMult) => {
-			// For non-horsetail shells, compute an initial vertical speed to add to star burst.
-			// The magic number comes from testing what looks best. The ideal is that all shell
-			// bursts appear visually centered for the majority of the star life (excl. willows etc.)
-			const standardInitialSpeed = this.spreadSize / 1800;
-
-			const star = Star.add(
-				x,
-				y,
-				color || randomColor(),
-				angle,
-				speedMult * speed,
-				// add minor variation to star life
-				this.starLife + Math.random() * this.starLife * this.starLifeVariation,
-				this.horsetail ? this.comet && this.comet.speedX : 0,
-				this.horsetail ? this.comet && this.comet.speedY : -standardInitialSpeed
-			);
-
-			if (this.secondColor) {
-				star.transitionTime = this.starLife * (Math.random() * 0.05 + 0.32);
-				star.secondColor = this.secondColor;
-			}
-
-			if (this.strobe) {
-				star.transitionTime = this.starLife * (Math.random() * 0.08 + 0.46);
-				star.strobe = true;
-				// How many milliseconds between switch of strobe state "tick". Note that the strobe pattern
-				// is on:off:off, so this is the "on" duration, while the "off" duration is twice as long.
-				//频闪状态切换之间多少毫秒“滴答”。注意，选通模式
-				//是开:关:关，所以这是“开”的时长，而“关”的时长是两倍。
-				star.strobeFreq = Math.random() * 20 + 40;
-				if (this.strobeColor) {
-					star.secondColor = this.strobeColor;
-				}
-			}
-
-			star.onDeath = onDeath;
-
-			if (this.glitter) {
-				star.sparkFreq = sparkFreq;
-				star.sparkSpeed = sparkSpeed;
-				star.sparkLife = sparkLife;
-				star.sparkLifeVariation = sparkLifeVariation;
-				star.sparkColor = this.glitterColor;
-				star.sparkTimer = Math.random() * star.sparkFreq;
-			}
-		};
-
-		//点阵星星工厂
-		const dotStarFactory = (point, color, strobe, strobeColor) => {
-			const standardInitialSpeed = this.spreadSize / 1800;
-
-			if (strobe) {
-				//随机speed 0.05~0.15
-				var speed = Math.random() * 0.1 + 0.05;
-
-				const star = Star.add(
-					point.x,
-					point.y,
-					color,
-					Math.random() * 2 * Math.PI,
-					speed,
-					// add minor variation to star life
-					this.starLife + Math.random() * this.starLife * this.starLifeVariation + speed * 1000,
-					this.horsetail ? this.comet && this.comet.speedX : 0,
-					this.horsetail ? this.comet && this.comet.speedY : -standardInitialSpeed,
-					2
-				);
-
-				star.transitionTime = this.starLife * (Math.random() * 0.08 + 0.46);
-				star.strobe = true;
-				star.strobeFreq = Math.random() * 20 + 40;
-				star.secondColor = strobeColor;
-			} else {
-				Spark.add(
-					point.x,
-					point.y,
-					color,
-					Math.random() * 2 * Math.PI,
-					// apply near cubic falloff to speed (places more particles towards outside)
-					Math.pow(Math.random(), 0.15) * 1.4,
-					this.starLife + Math.random() * this.starLife * this.starLifeVariation + 1000
-				);
-			}
-
-			//文字尾影
-			Spark.add(point.x + 5, point.y + 10, color, Math.random() * 2 * Math.PI, Math.pow(Math.random(), 0.05) * 0.4, this.starLife + Math.random() * this.starLife * this.starLifeVariation + 2000);
-		};
-
-		if (typeof this.color === "string") {
-			if (this.color === "random") {
-				color = null; // falsey value creates random color in starFactory
-			} else {
-				color = this.color;
-			}
-
-			//环的位置是随机的，旋转是随机的
-			if (this.ring) {
-				const ringStartAngle = Math.random() * Math.PI;
-				const ringSquash = Math.pow(Math.random(), 2) * 0.85 + 0.15;
-
-				createParticleArc(0, PI_2, this.starCount, 0, (angle) => {
-					// Create a ring, squashed horizontally
-					const initSpeedX = Math.sin(angle) * speed * ringSquash;
-					const initSpeedY = Math.cos(angle) * speed;
-					// Rotate ring
-					const newSpeed = MyMath.pointDist(0, 0, initSpeedX, initSpeedY);
-					const newAngle = MyMath.pointAngle(0, 0, initSpeedX, initSpeedY) + ringStartAngle;
-					const star = Star.add(
-						x,
-						y,
-						color,
-						newAngle,
-						// apply near cubic falloff to speed (places more particles towards outside)
-						newSpeed, //speed,
-						// add minor variation to star life
-						this.starLife + Math.random() * this.starLife * this.starLifeVariation
-					);
-
-					if (this.glitter) {
-						star.sparkFreq = sparkFreq;
-						star.sparkSpeed = sparkSpeed;
-						star.sparkLife = sparkLife;
-						star.sparkLifeVariation = sparkLifeVariation;
-						star.sparkColor = this.glitterColor;
-						star.sparkTimer = Math.random() * star.sparkFreq;
-					}
-				});
-			}
-			// Normal burst
-			else {
-				createBurst(this.starCount, starFactory);
-			}
-		} else if (Array.isArray(this.color)) {
-			if (Math.random() < 0.5) {
-				const start = Math.random() * Math.PI;
-				const start2 = start + Math.PI;
-				const arc = Math.PI;
-				color = this.color[0];
-				// Not creating a full arc automatically reduces star count.
-				createBurst(this.starCount, starFactory, start, arc);
-				color = this.color[1];
-				createBurst(this.starCount, starFactory, start2, arc);
-			} else {
-				color = this.color[0];
-				createBurst(this.starCount / 2, starFactory);
-				color = this.color[1];
-				createBurst(this.starCount / 2, starFactory);
-			}
-		} else {
-			throw new Error("无效的烟花颜色。应为字符串或字符串数组，但得到:" + this.color);
-		}
-
-		if (!this.disableWordd && store.state.config.wordShell) {
-			if (Math.random() < 0.1) {
-				if (Math.random() < 0.5) {
-					createWordBurst(randomWord(), dotStarFactory, x, y);
-				}
-			}
-		}
-
-		if (this.pistil) {
-			const innerShell = new Shell({
-				spreadSize: this.spreadSize * 0.5,
-				starLife: this.starLife * 0.6,
-				starLifeVariation: this.starLifeVariation,
-				starDensity: 1.4,
-				color: this.pistilColor,
-				glitter: "light",
-				disableWord: true,
-				glitterColor: this.pistilColor === COLOR.Gold ? COLOR.Gold : COLOR.White,
-			});
-			innerShell.burst(x, y);
-		}
-
-		if (this.streamers) {
-			const innerShell = new Shell({
-				spreadSize: this.spreadSize * 0.9,
-				starLife: this.starLife * 0.8,
-				starLifeVariation: this.starLifeVariation,
-				starCount: Math.floor(Math.max(6, this.spreadSize / 45)),
-				color: COLOR.White,
-				disableWord: true,
-				glitter: "streamer",
-			});
-			innerShell.burst(x, y);
-		}
-
-		// Queue burst flash render
-		//队列突发flash渲染
-		BurstFlash.add(x, y, this.spreadSize / 4);
-
-		// Play sound, but only for "original" shell, the one that was launched.
-		// We don't want multiple sounds from pistil or streamer "sub-shells".
-		// This can be detected by the presence of a comet.
-
-		//播放声音，但只针对“原装”shell，即被推出的那个。
-		//我们不希望多个声音来自雌蕊或流光“子壳”。
-		//这可以通过彗星的出现来检测。
-
-		if (this.comet) {
-			// Scale explosion sound based on current shell size and selected (max) shell size.
-			// Shooting selected shell size will always sound the same no matter the selected size,
-			// but when smaller shells are auto-fired, they will sound smaller. It doesn't sound great
-			// when a value too small is given though, so instead of basing it on proportions, we just
-			// look at the difference in size and map it to a range known to sound good.
-			// This project is copyrighted by NianBroken!
-
-			//根据当前烟花大小和选定的(最大)烟花大小缩放爆炸声音。
-			//拍摄选择的外壳尺寸无论选择的尺寸如何，听起来总是一样的，
-			//但是小一点的炮弹自动发射的时候，声音会小一点。听起来不太好
-			//但是当给定的值太小时，我们不是根据比例，而是
-			//看大小差异，映射到一个已知好听的范围。
-			// 这个项目的版权归NianBroken所有！
-			const maxDiff = 2;
-			const sizeDifferenceFromMaxSize = Math.min(maxDiff, shellSizeSelector() - this.shellSize);
-			const soundScale = (1 - sizeDifferenceFromMaxSize / maxDiff) * 0.3 + 0.7;
-			soundManager.playSound("burst", soundScale);
-		}
-	}
-}
-
-const BurstFlash = {
-	active: [],
-	_pool: [],
-
-	_new() {
-		return {};
-	},
-
-	add(x, y, radius) {
-		const instance = this._pool.pop() || this._new();
-
-		instance.x = x;
-		instance.y = y;
-		instance.radius = radius;
-
-		this.active.push(instance);
-		return instance;
-	},
-
-	returnInstance(instance) {
-		this._pool.push(instance);
-	},
-};
-
 // Helper to generate objects for storing active particles.
 // Particles are stored in arrays keyed by color (code, not name) for improved rendering performance.
 function createParticleCollection() {
@@ -2392,164 +1855,6 @@ const Spark = {
 	returnInstance(instance) {
 		// Add back to the pool.
 		this._pool.push(instance);
-	},
-};
-
-//音效管理器
-const soundManager = {
-	baseURL: "./audio/",
-	ctx: new (window.AudioContext || window.webkitAudioContext)(),
-	sources: {
-		lift: {
-			volume: 1,
-			playbackRateMin: 0.85,
-			playbackRateMax: 0.95,
-			fileNames: ["lift1.mp3", "lift2.mp3", "lift3.mp3"],
-		},
-		burst: {
-			volume: 1,
-			playbackRateMin: 0.8,
-			playbackRateMax: 0.9,
-			fileNames: ["burst1.mp3", "burst2.mp3"],
-		},
-		burstSmall: {
-			volume: 0.25,
-			playbackRateMin: 0.8,
-			playbackRateMax: 1,
-			fileNames: ["burst-sm-1.mp3", "burst-sm-2.mp3"],
-		},
-		crackle: {
-			volume: 0.2,
-			playbackRateMin: 1,
-			playbackRateMax: 1,
-			fileNames: ["crackle1.mp3"],
-		},
-		crackleSmall: {
-			volume: 0.3,
-			playbackRateMin: 1,
-			playbackRateMax: 1,
-			fileNames: ["crackle-sm-1.mp3"],
-		},
-	},
-
-	preload() {
-		const allFilePromises = [];
-
-		function checkStatus(response) {
-			if (response.status >= 200 && response.status < 300) {
-				return response;
-			}
-			const customError = new Error(response.statusText);
-			customError.response = response;
-			throw customError;
-		}
-
-		const types = Object.keys(this.sources);
-		types.forEach((type) => {
-			const source = this.sources[type];
-			const { fileNames } = source;
-			const filePromises = [];
-			fileNames.forEach((fileName) => {
-				const fileURL = this.baseURL + fileName;
-				// Promise will resolve with decoded audio buffer.
-				const promise = fetch(fileURL)
-					.then(checkStatus)
-					.then((response) => response.arrayBuffer())
-					.then(
-						(data) =>
-							new Promise((resolve) => {
-								this.ctx.decodeAudioData(data, resolve);
-							})
-					);
-
-				filePromises.push(promise);
-				allFilePromises.push(promise);
-			});
-
-			Promise.all(filePromises).then((buffers) => {
-				source.buffers = buffers;
-			});
-		});
-
-		return Promise.all(allFilePromises);
-	},
-
-	pauseAll() {
-		this.ctx.suspend();
-	},
-
-	resumeAll() {
-		// Play a sound with no volume for iOS. This 'unlocks' the audio context when the user first enables sound.
-		this.playSound("lift", 0);
-		// Chrome mobile requires interaction before starting audio context.
-		// The sound toggle button is triggered on 'touchstart', which doesn't seem to count as a full
-		// interaction to Chrome. I guess it needs a click? At any rate if the first thing the user does
-		// is enable audio, it doesn't work. Using a setTimeout allows the first interaction to be registered.
-		// Perhaps a better solution is to track whether the user has interacted, and if not but they try enabling
-		// sound, show a tooltip that they should tap again to enable sound.
-		setTimeout(() => {
-			this.ctx.resume();
-		}, 250);
-	},
-
-	// Private property used to throttle small burst sounds.
-	_lastSmallBurstTime: 0,
-
-	/**
-	 * Play a sound of `type`. Will randomly pick a file associated with type, and play it at the specified volume
-	 * and play speed, with a bit of random variance in play speed. This is all based on `sources` config.
-	 *
-	 * @param  {string} type - The type of sound to play.
-	 * @param  {?number} scale=1 - Value between 0 and 1 (values outside range will be clamped). Scales less than one
-	 *                             descrease volume and increase playback speed. This is because large explosions are
-	 *                             louder, deeper, and reverberate longer than small explosions.
-	 *                             Note that a scale of 0 will mute the sound.
-	 */
-	playSound(type, scale = 1) {
-		// Ensure `scale` is within valid range.
-		scale = MyMath.clamp(scale, 0, 1);
-
-		// Disallow starting new sounds if sound is disabled, app is running in slow motion, or paused.
-		// Slow motion check has some wiggle room in case user doesn't finish dragging the speed bar
-		// *all* the way back.
-		if (!canPlaySoundSelector() || simSpeed < 0.95) {
-			return;
-		}
-
-		// Throttle small bursts, since floral/falling leaves shells have a lot of them.
-		if (type === "burstSmall") {
-			const now = Date.now();
-			if (now - this._lastSmallBurstTime < 20) {
-				return;
-			}
-			this._lastSmallBurstTime = now;
-		}
-
-		const source = this.sources[type];
-
-		if (!source) {
-			throw new Error(`Sound of type "${type}" doesn't exist.`);
-		}
-
-		const initialVolume = source.volume;
-		const initialPlaybackRate = MyMath.random(source.playbackRateMin, source.playbackRateMax);
-
-		// Volume descreases with scale.
-		const scaledVolume = initialVolume * scale;
-		// Playback rate increases with scale. For this, we map the scale of 0-1 to a scale of 2-1.
-		// So at a scale of 1, sound plays normally, but as scale approaches 0 speed approaches double.
-		const scaledPlaybackRate = initialPlaybackRate * (2 - scale);
-
-		const gainNode = this.ctx.createGain();
-		gainNode.gain.value = scaledVolume;
-
-		const buffer = MyMath.randomChoice(source.buffers);
-		const bufferSource = this.ctx.createBufferSource();
-		bufferSource.playbackRate.value = scaledPlaybackRate;
-		bufferSource.buffer = buffer;
-		bufferSource.connect(gainNode);
-		gainNode.connect(this.ctx.destination);
-		bufferSource.start(0);
 	},
 };
 

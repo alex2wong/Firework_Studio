@@ -1,10 +1,14 @@
 <div align="center">
 
-# 烟花模拟器
+# 烟花研究所
 
-一个可以模拟各种烟花效果的网页
+一个可以模拟研究各种烟花效果的网站
 
 它可以展示各种绚丽多彩的烟花效果 并让人仿佛置身于真实烟花的绚丽世界之中
+
+```
+祝大家新年快乐，蛇来运转，画蛇添福气！
+```
 
 <img src="./Image_Preview.png" alt="主界面" style="zoom:35%;" />
 
@@ -16,13 +20,11 @@
 
 - [https://fireworks.nianbroken.top/](https://fireworks.nianbroken.top/ "https://fireworks.nianbroken.top/")
 
-## 文字烟花
+## 相比原版优化点
 
-- 在 `js` → `script.js` 的第 81 行处可以修改文字烟花中的文字
+- 用户界面增加了用户自定义`烟花文字`的输入框，可以送烟花祝福语了！
 
-- 在 `js` → `script.js` 的第 93 行处可以修改烟花的背景
-
-- 在 `js` → `script.js` 的第 151 行处可以修改默认是否开启文字烟花
+- 在 `js` → `script.js` 的 canvasContainer.style.backgroundImage 处可以修改烟花画面的背景 （TODO：打算改为可以上传修改烟花夜空背景）
 
 ## 许可证
 
@@ -32,13 +34,11 @@
 
 ## 特别感谢
 
+- [Firework Simulator](https://github.com/NianBroken/Firework_Simulator)
+
 - [Firework Simulator v2](https://codepen.io/MillerTime/pen/XgpNwb)
 
 - [haodong108/fireworks-2023](https://gitee.com/haodong108/fireworks-2023 "haodong108/fireworks-2023")
-
-## 最便宜的VPN
-
-[https://nianbroken.github.io/Great-Firewall/](https://nianbroken.github.io/Great-Firewall/ "https://nianbroken.github.io/Great-Firewall/")
 
 ## 其他
 

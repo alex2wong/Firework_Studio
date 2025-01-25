@@ -122,6 +122,10 @@
 								<label class="long-exposure-label"> 保留烟花的火花 </label>
 								<input class="long-exposure" type="checkbox" />
 							</div>
+							<!-- <div class="form-option form-option--checkbox"></div>
+								<label class="long-music-label"> 打开新年音乐 </label>
+								<input class="enable-music" type="checkbox" />
+							</div> -->
 						</form>
 						<div class="credits">
 							<p class="copyright">
@@ -144,10 +148,19 @@
 			</div>
 		</div>
 
+		<div class="custom-text-input">
+			<input type="text" id="customText" maxlength="8" placeholder="输入祝福语(最多8字)">
+			<button onclick="addCustomText()">添加</button>
+			<div class="custom-text-list" id="customTextList"></div>
+		  </div>
+
 		<!-- partial -->
 		<script src="./js/fscreen.js"></script>
 		<script src="./js/Stage.js"></script>
 		<script src="./js/MyMath.js"></script>
+		<script src="./js/fireworkShell.js"></script>
+		<script src="./js/firework.js"></script>
+		<script src="./js/soundManager.js"></script>
 		<script src="./js/script.js"></script>
 	</body>
 </html>
