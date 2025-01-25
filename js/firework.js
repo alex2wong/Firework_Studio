@@ -242,14 +242,12 @@ class Shell {
 					this.horsetail ? this.comet && this.comet.speedY : -standardInitialSpeed,
 					2
 				);
-                console.log('# Strobe dotStarFactory, color ', color, starLife);
 
 				star.transitionTime = this.starLife * (Math.random() * 0.08 + 0.46);
 				star.strobe = true;
 				star.strobeFreq = Math.random() * 20 + 40;
 				star.secondColor = strobeColor;
 			} else {
-                console.log('# None Strobe dotStarFactory')
 				Spark.add(
 					point.x,
 					point.y,

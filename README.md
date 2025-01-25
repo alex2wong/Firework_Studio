@@ -2,29 +2,27 @@
 
 # 烟花研究所
 
-一个可以模拟研究各种烟花效果的网站
+一个可以模拟研究各种烟花效果的 Web 应用((Cyber Fireworks Studio))
 
-它可以展示各种绚丽多彩的烟花效果 并让人仿佛置身于真实烟花的绚丽世界之中
+它可以展示各种绚丽多彩的烟花效果 并让人仿佛置身于真实（赛博）烟花的绚丽世界之中
 
 ```
-祝大家新年快乐，蛇来运转，画蛇添福气！
+🎆 祝大家新年快乐，蛇来运转，画蛇添福气！🐍
 ```
 
-<img src="./Image_Preview.png" alt="主界面" style="zoom:35%;" />
+<img src="./Firework_Studio.webp" alt="主界面" style="zoom:35%;" />
 
 </div>
 
 ## 预览
 
-- [https://nianbroken.github.io/Firework_Simulator/](https://nianbroken.github.io/Firework_Simulator/ "https://nianbroken.github.io/Firework_Simulator/")
-
-- [https://fireworks.nianbroken.top/](https://fireworks.nianbroken.top/ "https://fireworks.nianbroken.top/")
+- [https://alex2wong.github.io/Firework_Studio/](https://alex2wong.github.io/Firework_Studio/ "https://alex2wong.github.io/Firework_Studio/")
 
 ## 相比原版优化点
 
-- 用户界面增加了用户自定义`烟花文字`的输入框，可以送烟花祝福语了！
+- 增加自定义`烟花文字`的输入和随机发射，可以`送烟花祝福语`了！
 
-- 在 `js` → `script.js` 的 canvasContainer.style.backgroundImage 处可以修改烟花画面的背景 （TODO：打算改为可以上传修改烟花夜空背景）
+- 增加自定义`烟花夜空`的背景图，太棒了！可以看最喜欢的图片了！
 
 ## 许可证
 
@@ -34,7 +32,9 @@
 
 ## 特别感谢
 
-- [Firework Simulator](https://github.com/NianBroken/Firework_Simulator)
+- 📢 在禁放烟花爆竹的上海大部分地区，我们可以和家人朋友一起发射、欣赏赛博烟花啦！给 ta 送上烟花祝福
+
+- [fork from: Firework Simulator](https://github.com/NianBroken/Firework_Simulator)
 
 - [Firework Simulator v2](https://codepen.io/MillerTime/pen/XgpNwb)
 

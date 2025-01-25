@@ -361,3 +361,53 @@ body {
 	transition-timing-function: ease-out;
 	transition-duration: 0.4s;
 }
+
+.inputs,
+.custom-text-input {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    padding: 12px;
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
+    max-width: 300px;
+	opacity: 0.5;
+}
+
+.input-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.bg-upload {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.bg-upload button {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    color: rgba(255,255,255,0.5);
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-right: 8px;
+}
+
+.bg-upload button:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.bg-reset {
+	cursor: pointer;
+}
+.bg-reset:hover{
+	color: rgba(255, 255, 255, 0.7);
+}

@@ -148,10 +148,21 @@
 			</div>
 		</div>
 
-		<div class="custom-text-input">
-			<input type="text" id="customText" maxlength="8" placeholder="输入祝福语(最多8字)">
-			<button onclick="addCustomText()">添加</button>
+		<div class="custom-text-input inputs">
+			<div class="input-group">
+				<input type="text" id="customText" maxlength="8" placeholder="输入祝福语(最多8字)">
+				<button onclick="addCustomText()">添加</button>
+			</div>
 			<div class="custom-text-list" id="customTextList"></div>
+			
+			<!-- 添加背景上传部分 -->
+			<div class="bg-upload">
+				<input type="file" id="bgUpload" accept="image/*" style="display: none;">
+				<button onclick="document.getElementById('bgUpload').click()">
+					选择背景图
+				</button>
+				<div class="bg-reset" onclick="resetBackground()" id="resetBgBtn" style="display: none;" title="清除背景">x</div>
+			</div>
 		  </div>
 
 		<!-- partial -->
@@ -161,6 +172,7 @@
 		<script src="./js/fireworkShell.js"></script>
 		<script src="./js/firework.js"></script>
 		<script src="./js/soundManager.js"></script>
+		<script src="./js/render.js"></script>
 		<script src="./js/script.js"></script>
 	</body>
 </html>
