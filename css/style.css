@@ -374,8 +374,12 @@ body {
     padding: 12px;
     color: rgba(255,255,255,0.5);
     font-size: 14px;
-    max-width: 300px;
+    max-width: 350px;
 	opacity: 0.5;
+}
+
+.text-input {
+	max-width: 150px;
 }
 
 .input-group {
@@ -410,4 +414,34 @@ body {
 }
 .bg-reset:hover{
 	color: rgba(255, 255, 255, 0.7);
+}
+
+.share-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    color: white;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+.share-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* 添加分享成功提示样式 */
+.share-toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    z-index: 1000;
+    display: none;
 }

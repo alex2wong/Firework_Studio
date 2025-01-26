@@ -150,8 +150,11 @@
 
 		<div class="custom-text-input inputs">
 			<div class="input-group">
-				<input type="text" id="customText" maxlength="8" placeholder="输入祝福语(最多8字)">
-				<button onclick="addCustomText()">添加</button>
+				<input class="text-input" type="text" id="customText" maxlength="8" placeholder="输入祝福语(最多8字)">
+				<button onclick="addCustomText()">发射🚀</button>
+				<button onclick="shareFireworks()" class="share-btn" title="分享烟花祝福">
+					分享祝福🔗
+				</button>
 			</div>
 			<div class="custom-text-list" id="customTextList"></div>
 			
@@ -173,6 +176,7 @@
 		<script src="./js/firework.js"></script>
 		<script src="./js/soundManager.js"></script>
 		<script src="./js/render.js"></script>
+		<script src="./js/share.js"></script>
 		<script src="./js/script.js"></script>
 	</body>
 </html>

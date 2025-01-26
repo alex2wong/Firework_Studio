@@ -84,8 +84,7 @@ function addCustomText() {
 	const text = input.value.trim();
 	
 	// 验证输入
-	if (!text) {
-		alert('请输入祝福语');
+	if (!text.trim()) {
 		return;
 	}
 	if (text.length > 8) {
@@ -132,7 +131,20 @@ function randomWord() {
 	const allWords = getAllWords();
 	if (allWords.length === 0) return "";
 	if (allWords.length === 1) return allWords[0];
-	return allWords[Math.floor(Math.random() * allWords.length)];
+	// 分别获取默认和自定义祝福语
+    const defaultTexts = defaultWords;
+    const customTexts = Array.from(customWords);
+    
+    // 设置权重比例：自定义祝福语:默认祝福语 = 7:3
+    const useCustom = Math.random() < 0.7;
+    
+    if (useCustom && customTexts.length > 0) {
+        // 从自定义祝福语中随机选择
+        return customTexts[Math.floor(Math.random() * customTexts.length)];
+    } else {
+        // 从默认祝福语中随机选择
+        return defaultTexts[Math.floor(Math.random() * defaultTexts.length)];
+    }
 }
 
 // // 自定义背景
@@ -1087,6 +1099,7 @@ function loadDefaultBg() {
 window.addEventListener('load', function() {
 	// loadDefaultBg();
     handleBackgroundUpload();
+	parseUrlParams();  // 解析 URL 参数
 });
 
 
